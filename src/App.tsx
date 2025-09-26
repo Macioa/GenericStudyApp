@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Button, Card, Input, Form, Typography, Space } from 'antd'
+import { Button, Card, Input, Form, Typography, Space, Tabs } from 'antd'
 import { z } from 'zod'
 import './App.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 // Zod schema for validation
 const studyTopicSchema = z.object({
@@ -13,8 +13,9 @@ const studyTopicSchema = z.object({
 function App() {
   const [studyTopic, setStudyTopic] = useState('')
   const [isValid, setIsValid] = useState(false)
+  const [activeTab, setActiveTab] = useState('1')
 
-  const handleTopicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     setStudyTopic(value)
     
@@ -32,19 +33,20 @@ function App() {
     }
   }
 
-  return (
-    <div style={{ padding: '24px', maxWidth: '600px', margin: '0 auto' }}>
-      <Title level={1}>GenericStudyApp</Title>
-      <Text>A React TypeScript study application with AI integration.</Text>
-      
-      <Card style={{ marginTop: '24px' }}>
+  const tabItems = [
+    {
+      key: '1',
+      label: 'With specific topic details',
+      children: (
         <Form layout="vertical">
           <Form.Item label="What would you like to study today?">
-            <Input
-              placeholder="Enter a topic (e.g., React hooks, TypeScript basics)"
+            <Input.TextArea
+              placeholder="Enter detailed topic information, specific concepts, examples, or any additional context you'd like to include..."
               value={studyTopic}
               onChange={handleTopicChange}
               status={studyTopic && !isValid ? 'error' : ''}
+              rows={20}
+              style={{ fontSize: '16px', lineHeight: '1.6' }}
             />
             {studyTopic && !isValid && (
               <Text type="danger" style={{ fontSize: '12px' }}>
@@ -66,12 +68,54 @@ function App() {
             </Button>
           </Space>
         </Form>
-      </Card>
+      )
+    },
+    {
+      key: '2',
+      label: 'Without specific topic details',
+      children: (
+        <Form layout="vertical">
+          <Form.Item label="What would you like to study today?">
+            <Input.TextArea
+              placeholder="Enter a general topic or subject area..."
+              value={studyTopic}
+              onChange={handleTopicChange}
+              status={studyTopic && !isValid ? 'error' : ''}
+              rows={20}
+              style={{ fontSize: '16px', lineHeight: '1.6' }}
+            />
+            {studyTopic && !isValid && (
+              <Text type="danger" style={{ fontSize: '12px' }}>
+                Topic must be between 1 and 100 characters
+              </Text>
+            )}
+          </Form.Item>
+          
+          <Space>
+            <Button 
+              type="primary" 
+              disabled={!isValid}
+              onClick={handleStartStudying}
+            >
+              Start Studying
+            </Button>
+            <Button onClick={() => setStudyTopic('')}>
+              Clear
+            </Button>
+          </Space>
+        </Form>
+      )
+    }
+  ]
 
-      <Card style={{ marginTop: '16px' }}>
-        <Text type="secondary">
-          Dependencies included: React, TypeScript, Vite, Ant Design, Zod, LangChain, and dotenv
-        </Text>
+  return (
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <Card>
+        <Tabs 
+          activeKey={activeTab} 
+          onChange={setActiveTab}
+          items={tabItems}
+        />
       </Card>
     </div>
   )
