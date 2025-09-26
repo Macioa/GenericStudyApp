@@ -3,7 +3,7 @@ import { Button, Card, Input, Form, Typography, Space, Tabs } from 'antd'
 import { z } from 'zod'
 import './App.css'
 
-const { Text } = Typography
+const { Text, Title } = Typography
 
 // Zod schema for validation
 const studyTopicSchema = z.object({
@@ -41,7 +41,7 @@ function App() {
         <Form layout="vertical">
           <Form.Item label="What would you like to study today?">
             <Input.TextArea
-              placeholder="Enter detailed topic information, specific concepts, examples, or any additional context you'd like to include..."
+              placeholder="Enter detailed topic information, specific concepts, examples, broken down by subtopic, or including specific questions..."
               value={studyTopic}
               onChange={handleTopicChange}
               status={studyTopic && !isValid ? 'error' : ''}
@@ -111,6 +111,9 @@ function App() {
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <Card>
+        <Title level={1} style={{ textAlign: 'center', marginBottom: '24px' }}>
+          Generic Study App
+        </Title>
         <Tabs 
           activeKey={activeTab} 
           onChange={setActiveTab}
