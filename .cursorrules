@@ -29,3 +29,7 @@ debugInfo('Data loaded successfully', dataObj);
 console.log('Component mounted');
 console.error('API call failed', error);
 ```
+
+## Environment Variables
+
+Use `process.env.VARIABLE_NAME` to access environment variables from .env files.

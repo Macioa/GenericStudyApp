@@ -5,7 +5,7 @@
 
 // Check if debug logging is enabled (defaults to true)
 const isDebugEnabled = (): boolean => {
-  const debugLog = import.meta.env.VITE_DEBUG_LOG;
+  const debugLog = process.env.DEBUG_LOG;
   // Default to true if not set, or if explicitly set to 'true'
   return debugLog === undefined || debugLog === 'true';
 };
