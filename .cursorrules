@@ -1,0 +1,29 @@
+# Cursor Rules for Generic Study App
+
+## Debug Logging
+
+Always use the debug logger utility for console logging instead of direct console.log statements.
+
+### Import the logger:
+```typescript
+import { debugLog, debugError, debugWarn, debugInfo } from './utils/logger';
+```
+
+### Usage:
+- Use `debugLog()` for general debug messages
+- Use `debugError()` for error logging
+- Use `debugWarn()` for warning messages
+- Use `debugInfo()` for informational messages
+
+### Examples:
+```typescript
+// Good
+debugLog('Component mounted', dataObj);
+debugError('API call failed', error);
+debugWarn('Deprecated feature used', dataObj);
+debugInfo('Data loaded successfully', dataObj);
+
+// Avoid
+console.log('Component mounted');
+console.error('API call failed', error);
+```
