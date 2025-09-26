@@ -3,7 +3,7 @@ import { Button, Card, Input, Form, Typography, Space, Tabs } from 'antd'
 import { z } from 'zod'
 import './App.css'
 
-const { Text, Title } = Typography
+const { Text } = Typography
 
 // Zod schema for validation
 const studyTopicSchema = z.object({

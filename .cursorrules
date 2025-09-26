@@ -32,4 +32,4 @@ console.error('API call failed', error);
 
 ## Environment Variables
 
-Use `process.env.VARIABLE_NAME` to access environment variables from .env files.
+Use `import.meta.env.VITE_VARIABLE_NAME` to access environment variables from .env files.

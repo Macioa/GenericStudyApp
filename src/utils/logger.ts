@@ -1,17 +1,18 @@
 /**
  * Debug logger utility
- * Logs to console only when DEBUG_LOG environment variable is true
+ * Logs to console only when VITE_DEBUG_LOG environment variable is true
+ * Set VITE_DEBUG_LOG=true in your .env file to enable debug logging
  */
 
 // Check if debug logging is enabled (defaults to true)
 const isDebugEnabled = (): boolean => {
-  const debugLog = process.env.DEBUG_LOG;
+  const debugLog = import.meta.env.VITE_DEBUG_LOG;
   // Default to true if not set, or if explicitly set to 'true'
   return debugLog === undefined || debugLog === 'true';
 };
 
 /**
- * Debug log function that respects the DEBUG_LOG environment variable
+ * Debug log function that respects the VITE_DEBUG_LOG environment variable
  * @param message - The message to log
  * @param data - Optional additional data to log
  */
@@ -22,7 +23,7 @@ export const debugLog = (message: string, ...data: any[]): void => {
 };
 
 /**
- * Debug error function that respects the DEBUG_LOG environment variable
+ * Debug error function that respects the VITE_DEBUG_LOG environment variable
  * @param message - The error message to log
  * @param error - Optional error object to log
  */
@@ -33,7 +34,7 @@ export const debugError = (message: string, error?: any): void => {
 };
 
 /**
- * Debug warn function that respects the DEBUG_LOG environment variable
+ * Debug warn function that respects the VITE_DEBUG_LOG environment variable
  * @param message - The warning message to log
  * @param data - Optional additional data to log
  */
@@ -44,7 +45,7 @@ export const debugWarn = (message: string, ...data: any[]): void => {
 };
 
 /**
- * Debug info function that respects the DEBUG_LOG environment variable
+ * Debug info function that respects the VITE_DEBUG_LOG environment variable
  * @param message - The info message to log
  * @param data - Optional additional data to log
  */
