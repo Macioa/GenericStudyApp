@@ -1,5 +1,7 @@
 # Cursor Rules for Generic Study App
 
+Variables starting with underscore (_) are ignored by unused variable linting rules.
+
 ## Debug Logging
 
 Always use the debug logger utility for console logging instead of direct console.log statements.

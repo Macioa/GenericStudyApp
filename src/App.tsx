@@ -111,9 +111,9 @@ function App() {
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <Card>
-        <Title level={1} style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#213547', fontWeight: 'bold', fontSize: '32px' }}>
           Generic Study App
-        </Title>
+        </h1>
         <Tabs 
           activeKey={activeTab} 
           onChange={setActiveTab}
