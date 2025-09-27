@@ -153,53 +153,57 @@ export const StudyModal: React.FC<StudyModalProps> = ({
 
         {/* Remaining Questions */}
         <Card title={`Remaining Questions (${modalState.remainingQuestions.length})`} size="small">
-          <List
-            size="small"
-            dataSource={modalState.remainingQuestions}
-            renderItem={(question, index) => (
-              <List.Item
-                actions={[
-                  <Button 
-                    type="primary" 
-                    size="small"
-                    onClick={() => handleAttemptQuestion(index)}
-                  >
-                    Attempt
-                  </Button>
-                ]}
-              >
-                <Text>{index + 1}. {question}</Text>
-              </List.Item>
-            )}
-          />
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <List
+              size="small"
+              dataSource={modalState.remainingQuestions}
+              renderItem={(question, index) => (
+                <List.Item
+                  actions={[
+                    <Button 
+                      type="primary" 
+                      size="small"
+                      onClick={() => handleAttemptQuestion(index)}
+                    >
+                      Attempt
+                    </Button>
+                  ]}
+                >
+                  <Text>{index + 1}. {question}</Text>
+                </List.Item>
+              )}
+            />
+          </div>
         </Card>
 
         {/* Completed Questions */}
         {modalState.completedQuestions.length > 0 && (
           <Card title={`Completed Questions (${modalState.completedQuestions.length})`} size="small">
-            <List
-              size="small"
-              dataSource={modalState.completedQuestions}
-              renderItem={(item, index) => (
-                <List.Item
-                  actions={[
-                    <Button 
-                      type="default" 
-                      size="small"
-                      onClick={() => handleRetryQuestion(index)}
-                    >
-                      Retry
-                    </Button>
-                  ]}
-                >
-                  <Space direction="vertical" style={{ width: '100%' }}>
-                    <Text strong>{index + 1}. {item.question}</Text>
-                    <Text type="secondary">Score: {Math.round(item.score * 100)}%</Text>
-                    <Text>{item.feedback}</Text>
-                  </Space>
-                </List.Item>
-              )}
-            />
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <List
+                size="small"
+                dataSource={modalState.completedQuestions}
+                renderItem={(item, index) => (
+                  <List.Item
+                    actions={[
+                      <Button 
+                        type="default" 
+                        size="small"
+                        onClick={() => handleRetryQuestion(index)}
+                      >
+                        Retry
+                      </Button>
+                    ]}
+                  >
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                      <Text strong>{index + 1}. {item.question}</Text>
+                      <Text type="secondary">Score: {Math.round(item.score * 100)}%</Text>
+                      <Text>{item.feedback}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </div>
           </Card>
         )}
       </Space>
