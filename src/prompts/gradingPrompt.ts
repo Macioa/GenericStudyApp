@@ -89,7 +89,7 @@ Student's Answer: ${validatedSubmission.answer}`;
       PROMPT_TEMPLATE,
       gradingInput,
       GradingResultSchema,
-      "gpt-4o-mini",
+      undefined, // Use preferred model from env
       0.7,
       onToken
     );

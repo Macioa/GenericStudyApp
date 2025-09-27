@@ -42,7 +42,7 @@ export async function detailedPromptStream(
     PROMPT_TEMPLATE,
     input,
     AppStateSchema,
-    "gpt-4o-mini",
+    undefined, // Use preferred model from env
     0.7,
     onToken
   );

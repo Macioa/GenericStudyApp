@@ -8,11 +8,7 @@ describe('Prompt Tester Integration Tests', () => {
     const testInput = "JavaScript basics: variables and functions";
     
     try {
-      const result = await genericPrompt({
-        input: testInput,
-        modelName: "gpt-4o-mini",
-        temperature: 0.7
-      });
+      const result = await genericPrompt(testInput);
       
       debugLog('Generic prompt result:', result);
       
@@ -37,11 +33,7 @@ describe('Prompt Tester Integration Tests', () => {
     const testInput = "React hooks: useState and useEffect";
     
     try {
-      const result = await detailedPrompt({
-        input: testInput,
-        modelName: "gpt-4o-mini",
-        temperature: 0.7
-      });
+      const result = await detailedPrompt(testInput);
       
       debugLog('Detailed prompt result:', result);
       
@@ -96,18 +88,10 @@ describe('Prompt Tester Integration Tests', () => {
     
     try {
       // Run generic prompt
-      const genericResult = await genericPrompt({
-        input: testInput,
-        modelName: "gpt-4o-mini",
-        temperature: 0.7
-      });
+      const genericResult = await genericPrompt(testInput);
       
       // Run detailed prompt
-      const detailedResult = await detailedPrompt({
-        input: testInput,
-        modelName: "gpt-4o-mini",
-        temperature: 0.7
-      });
+      const detailedResult = await detailedPrompt(testInput);
       
       // Run grading
       const gradingResult = await gradeSubmission({

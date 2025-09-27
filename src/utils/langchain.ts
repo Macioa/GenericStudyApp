@@ -3,7 +3,51 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { debugLog, debugError } from './logger';
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+// Environment variables for model configuration
+const PREFERRED_LLM = import.meta.env.VITE_PREFERRED_LLM || 'openai';
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+const PERPLEXITY_API_KEY = import.meta.env.VITE_PERPLEXITY_API_KEY;
+const OPENAI_PREFERRED_MODEL = import.meta.env.VITE_OPENAI_PREFERRED_MODEL || 'gpt-4o-mini';
+const PERPLEXITY_PREFERRED_MODEL = import.meta.env.VITE_PERPLEXITY_PREFERRED_MODEL || 'sonar';
+
+// Get the appropriate API key based on preferred LLM
+function getApiKey(): string {
+  switch (PREFERRED_LLM) {
+    case 'perplexity':
+      if (!PERPLEXITY_API_KEY) {
+        throw new Error('PERPLEXITY_API_KEY environment variable is missing. Please set VITE_PERPLEXITY_API_KEY in your .env file.');
+      }
+      return PERPLEXITY_API_KEY;
+    case 'openai':
+    default:
+      if (!OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY environment variable is missing. Please set VITE_OPENAI_API_KEY in your .env file.');
+      }
+      return OPENAI_API_KEY;
+  }
+}
+
+// Get the appropriate model name based on preferred LLM
+function getPreferredModel(): string {
+  switch (PREFERRED_LLM) {
+    case 'perplexity':
+      return PERPLEXITY_PREFERRED_MODEL;
+    case 'openai':
+    default:
+      return OPENAI_PREFERRED_MODEL;
+  }
+}
+
+// Get the appropriate model provider based on preferred LLM
+function getModelProvider(): string {
+  switch (PREFERRED_LLM) {
+    case 'perplexity':
+      return 'perplexity';
+    case 'openai':
+    default:
+      return 'openai';
+  }
+}
 
 // Connection pool to reuse model instances
 interface ModelPoolEntry {
@@ -41,8 +85,10 @@ setInterval(cleanupModelPool, POOL_CONFIG.CLEANUP_INTERVAL);
 /**
  * Get or create a cached model instance
  */
-async function getCachedModel(modelName: string, temperature: number) {
-  const cacheKey = `${modelName}-${temperature}`;
+async function getCachedModel(modelName?: string, temperature: number = 0.7) {
+  // Use preferred model if no specific model is provided
+  const finalModelName = modelName || getPreferredModel();
+  const cacheKey = `${PREFERRED_LLM}-${finalModelName}-${temperature}`;
   const now = Date.now();
   
   // Check if we have a cached model
@@ -57,12 +103,38 @@ async function getCachedModel(modelName: string, temperature: number) {
   }
 
   // Create new model
-  debugLog('Creating new model instance', { modelName, temperature });
-  const model = await initChatModel(modelName, {
-    modelProvider: "openai",
-    apiKey: apiKey,
-    temperature,
+  debugLog('Creating new model instance', { 
+    preferredLLM: PREFERRED_LLM, 
+    modelName: finalModelName, 
+    temperature 
   });
+  
+  const apiKey = getApiKey();
+  let model;
+  
+  if (PREFERRED_LLM === 'perplexity') {
+    // Use universal chat model with custom Perplexity configuration
+    model = await initChatModel(finalModelName, {
+      modelProvider: "openai",
+      apiKey,
+      temperature,
+      baseURL: "https://api.perplexity.ai",
+      dangerouslyAllowBrowser: true,
+      // Override the client configuration to use Perplexity endpoint
+      configuration: {
+        baseURL: "https://api.perplexity.ai",
+        dangerouslyAllowBrowser: true,
+      },
+    });
+  } else {
+    // Use universal chat model for other providers
+    const modelProvider = getModelProvider();
+    model = await initChatModel(finalModelName, {
+      modelProvider,
+      apiKey,
+      temperature,
+    });
+  }
 
   // Cache the model
   modelPool.set(cacheKey, {
@@ -140,19 +212,24 @@ export async function executeStructuredPrompt<T>(
   promptTemplate: string,
   input: string,
   schema: any,
-  modelName: string = "gpt-4o-mini",
+  modelName?: string,
   temperature: number = 0.7
 ): Promise<T> {
   try {
-    debugLog('Starting structured prompt execution', { input, modelName, temperature });
+    const finalModelName = modelName || getPreferredModel();
+    debugLog('Starting structured prompt execution', { 
+      input, 
+      preferredLLM: PREFERRED_LLM,
+      modelName: finalModelName, 
+      temperature 
+    });
     
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is missing. Please set VITE_OPENAI_API_KEY in your .env file.');
-    }
+    // Validate API key
+    getApiKey(); // This will throw if missing
 
     // Use cached instances
     const parser = getCachedParser(schema);
-    const model = await getCachedModel(modelName, temperature);
+    const model = await getCachedModel(finalModelName, temperature);
     const prompt = getCachedPromptTemplate(promptTemplate);
 
     const formattedPrompt = await prompt.format({
@@ -180,20 +257,25 @@ export async function executeStructuredPromptStream<T>(
   promptTemplate: string,
   input: string,
   schema: any,
-  modelName: string = "gpt-4o-mini",
+  modelName?: string,
   temperature: number = 0.7,
   onToken?: (token: string) => void
 ): Promise<T> {
   try {
-    debugLog('Starting structured prompt execution with streaming', { input, modelName, temperature });
+    const finalModelName = modelName || getPreferredModel();
+    debugLog('Starting structured prompt execution with streaming', { 
+      input, 
+      preferredLLM: PREFERRED_LLM,
+      modelName: finalModelName, 
+      temperature 
+    });
     
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is missing. Please set VITE_OPENAI_API_KEY in your .env file.');
-    }
+    // Validate API key
+    getApiKey(); // This will throw if missing
 
     // Use cached instances
     const parser = getCachedParser(schema);
-    const model = await getCachedModel(modelName, temperature);
+    const model = await getCachedModel(finalModelName, temperature);
     const prompt = getCachedPromptTemplate(promptTemplate);
 
     const formattedPrompt = await prompt.format({
@@ -237,18 +319,23 @@ export async function executeStructuredPromptsBatch<T>(
     modelName?: string;
     temperature?: number;
   }>,
-  modelName: string = "gpt-4o-mini",
+  modelName?: string,
   temperature: number = 0.7
 ): Promise<T[]> {
   try {
-    debugLog('Starting batch prompt execution', { count: prompts.length, modelName, temperature });
+    const finalModelName = modelName || getPreferredModel();
+    debugLog('Starting batch prompt execution', { 
+      count: prompts.length, 
+      preferredLLM: PREFERRED_LLM,
+      modelName: finalModelName, 
+      temperature 
+    });
     
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is missing. Please set VITE_OPENAI_API_KEY in your .env file.');
-    }
+    // Validate API key
+    getApiKey(); // This will throw if missing
 
     // Use cached model for all prompts
-    const model = await getCachedModel(modelName, temperature);
+    const model = await getCachedModel(finalModelName, temperature);
 
     // Prepare all prompts
     const preparedPrompts = await Promise.all(
