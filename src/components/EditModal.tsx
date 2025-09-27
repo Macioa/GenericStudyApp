@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Button, Space, Typography, Divider } from 'antd';
+import { Modal, Form, Input, Button, Space, Divider } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { AppStateType } from '../types';
 import { debugLog } from '../utils/logger';
 
 const { TextArea } = Input;
-const { Text } = Typography;
 
 interface EditModalProps {
   visible: boolean;
@@ -71,6 +70,34 @@ export const EditModal: React.FC<EditModalProps> = ({
     });
   };
 
+  const handleSaveToFile = () => {
+    try {
+      const jsonData = JSON.stringify(localData, null, 2);
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create filename from subject, sanitizing it for filesystem
+      const sanitizedSubject = localData.subject
+        .replace(/[^a-zA-Z0-9\s-_]/g, '') // Remove special characters
+        .replace(/\s+/g, '_') // Replace spaces with underscores
+        .toLowerCase();
+      
+      const filename = `${sanitizedSubject}_StudyPlan.json`;
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      debugLog('Study plan saved to file:', filename);
+    } catch (error) {
+      debugLog('Failed to save study plan to file:', error);
+    }
+  };
+
   const handleCancel = () => {
     // Reset to initial data when canceling
     setLocalData(initialData);
@@ -120,9 +147,20 @@ export const EditModal: React.FC<EditModalProps> = ({
       onOk={handleOk}
       onCancel={handleCancel}
       width={800}
-      okText="Save Changes"
+      okText="Continue"
       cancelText="Cancel"
       destroyOnClose
+      footer={[
+        <Button key="cancel" onClick={handleCancel}>
+          Cancel
+        </Button>,
+        <Button key="save" onClick={handleSaveToFile}>
+          Save to File
+        </Button>,
+        <Button key="continue" type="primary" onClick={handleOk}>
+          Continue
+        </Button>,
+      ]}
     >
       <Form
         form={form}

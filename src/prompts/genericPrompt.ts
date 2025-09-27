@@ -17,7 +17,7 @@ Return a JSON object with the following structure:
 - subject: DYNAMICALLY GENERATE: A clear, concise topic that best represents the input content
 - originalPrompt: The original input text (unchanged)
 - subTopics: DYNAMICALLY GENERATE: Extract or create relevant subtopics based on the input content
-- context: DYNAMICALLY GENERATE: Include relevant context, background information, or prerequisites if helpful for understanding
+- context: DYNAMICALLY GENERATE: This contexts should describe the questions that will be asked, like "beginner questions only" or "deep dive"
 - questions: DYNAMICALLY GENERATE: Create thoughtful questions that promote learning and understanding of the subject matter
 
 Guidelines for dynamic generation:
