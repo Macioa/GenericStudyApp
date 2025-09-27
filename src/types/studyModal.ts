@@ -1,11 +1,5 @@
 import { z } from 'zod';
-
-// Zod schema for completed question validation
-export const CompletedQuestionSchema = z.object({
-  question: z.string(),
-  score: z.number().min(0).max(1),
-  feedback: z.string(),
-});
+import { CompletedQuestionSchema } from './completedQuestion';
 
 // Zod schema for StudyModal state validation
 export const StudyModalStateSchema = z.object({
@@ -15,5 +9,4 @@ export const StudyModalStateSchema = z.object({
 });
 
 // Type inference from Zod schemas
-export type CompletedQuestionType = z.infer<typeof CompletedQuestionSchema>;
 export type StudyModalStateType = z.infer<typeof StudyModalStateSchema>;

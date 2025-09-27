@@ -61,6 +61,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     const question = currentQuestion;
     const completedQuestion = {
       question,
+      answer,
       score: 1, // Default perfect score for now
       feedback: `Answer: ${answer}`
     };
