@@ -4,6 +4,7 @@ import type { AppStateType, CompletedQuestionType } from '../types';
 import type { StudyModalStateType } from '../types/studyModal';
 import { QuestionModal } from './QuestionModal';
 import { QuestionResultModal } from './QuestionResultModal';
+import { StudyResultModal } from './StudyResultModal';
 import { debugLog, debugError } from '../utils/logger';
 import { gradeSubmission } from '../prompts';
 import type { SubmissionInputType } from '../types';
@@ -34,6 +35,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
   const [currentAnswer, setCurrentAnswer] = useState<string>('');
   const [resubmitLoading, setResubmitLoading] = useState<boolean>(false);
   const [isRetry, setIsRetry] = useState<boolean>(false);
+  const [studyResultModalVisible, setStudyResultModalVisible] = useState(false);
 
   // Reset modal state when modal becomes visible
   useEffect(() => {
@@ -54,7 +56,13 @@ export const StudyModal: React.FC<StudyModalProps> = ({
 
   const handleOk = () => {
     debugLog('StudyModal completed with state:', modalState);
-    onCancel(); // Close modal for now
+    setStudyResultModalVisible(true);
+  };
+
+  const handleStudyResultOk = () => {
+    debugLog('Study result modal completed, returning to main app');
+    setStudyResultModalVisible(false);
+    onCancel(); // Return to main app
   };
 
   const handleAttemptQuestion = (questionIndex: number) => {
@@ -232,6 +240,16 @@ export const StudyModal: React.FC<StudyModalProps> = ({
           resubmitLoading={resubmitLoading}
         />
       )}
+
+      {/* Study Result Modal */}
+      <StudyResultModal
+        visible={studyResultModalVisible}
+        onCancel={() => setStudyResultModalVisible(false)}
+        onOk={handleStudyResultOk}
+        subject={appState.subject || "Study Session"}
+        completedQuestions={modalState.completedQuestions}
+        totalQuestions={appState.questions.length}
+      />
     </Modal>
   );
 };
