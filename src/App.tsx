@@ -1,19 +1,27 @@
 import { useState } from 'react'
 import { Button, Card, Input, Form, Typography, Space, Tabs } from 'antd'
 import { z } from 'zod'
+import type { AppStateType } from './types'
 import './App.css'
 
 const { Text } = Typography
 
 // Zod schema for validation
 const studyTopicSchema = z.object({
-  topic: z.string().min(1, 'Topic is required').max(100, 'Topic must be less than 100 characters'),
+  topic: z.string().min(1, 'Prompt is required').max(4000, 'Prompt must be less than 4000 characters'),
 })
 
 function App() {
   const [studyTopic, setStudyTopic] = useState('')
   const [isValid, setIsValid] = useState(false)
   const [activeTab, setActiveTab] = useState('1')
+  const [_appState, _setAppState] = useState<AppStateType>({
+    subject: '',
+    originalPrompt: '',
+    subTopics: [],
+    context: [],
+    questions: []
+  })
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value

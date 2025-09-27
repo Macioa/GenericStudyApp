@@ -1,5 +1,13 @@
 # Cursor Rules for Generic Study App
 
+## Folder Structure
+
+### src/
+- `components/` - React components with export-only index.ts
+- `prompts/` - Prompt files with export-only index.ts
+- `types/` - Types and Zod schemas with export-only index.ts
+- `utils/` - Utility functions and helpers
+
 Variables starting with underscore (_) are ignored by unused variable linting rules.
 
 ## Debug Logging
@@ -33,3 +41,21 @@ console.error('API call failed', error);
 ## Environment Variables
 
 Use `import.meta.env.VITE_VARIABLE_NAME` to access environment variables from .env files.
+
+## Prompt Files
+
+Structure prompt files with:
+- Prompt text at the top of the file as a comment or string
+- Async function to execute the prompt
+- Export the function for use in other modules
+
+### Example:
+```typescript
+// Prompt: "Explain the concept of..."
+const PROMPT_TEXT = "Explain the concept of...";
+
+export async function explainConcept(): Promise<string> {
+  // Implementation here
+  return "Response";
+}
+```
