@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, Card, Input, Form, Typography, Space, Tabs, Spin } from 'antd'
 import { z } from 'zod'
 import type { AppStateType } from './types'
+import { detailedPrompt } from './prompts'
 import './App.css'
 
 const { Text } = Typography
@@ -15,8 +16,8 @@ function App() {
   const [studyTopic, setStudyTopic] = useState('')
   const [isValid, setIsValid] = useState(false)
   const [activeTab, setActiveTab] = useState('1')
-  const [isLoading, _setIsLoading] = useState(false)
-  const [_appState, _setAppState] = useState<AppStateType>({
+  const [isLoading, setIsLoading] = useState(false)
+  const [_appState, setAppState] = useState<AppStateType>({
     subject: '',
     originalPrompt: '',
     subTopics: [],
@@ -36,9 +37,17 @@ function App() {
     }
   }
 
-  const handleStartStudying = () => {
+  const handleStartStudying = async () => {
     if (isValid) {
-      alert(`Ready to study: ${studyTopic}`)
+      setIsLoading(true)
+      try {
+        const result = await detailedPrompt(studyTopic)
+        setAppState(result)
+      } catch (error) {
+        console.error('Failed to generate study plan:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 

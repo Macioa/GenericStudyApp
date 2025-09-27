@@ -6,4 +6,6 @@ services:
       - "4173:4173"
     env_file:
       - .env
+    environment:
+      - DEBUG_LOG=false
     restart: unless-stopped

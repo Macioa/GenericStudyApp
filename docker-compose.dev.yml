@@ -1,0 +1,32 @@
+services:
+  generic-study-app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: generic-study-app-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.app.json:/app/tsconfig.app.json
+      - ./tsconfig.node.json:/app/tsconfig.node.json
+      - ./eslint.config.js:/app/eslint.config.js
+      # Mount package files to detect dependency changes
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      # Mount .env file for environment variables
+      - ./.env:/app/.env
+      # Exclude node_modules to use container's version
+      - /app/node_modules
+    env_file:
+      - .env
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DEBUG_LOG=true
+      - VITE_OPENAI_API_KEY=${OPENAI_API_KEY}
