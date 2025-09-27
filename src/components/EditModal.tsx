@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button, Space, Divider } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { AppStateType } from '../types';
 import { debugLog } from '../utils/logger';
+import { StudyPlanDisplayModal } from './StudyPlanDisplayModal';
 
 const { TextArea } = Input;
 
@@ -21,6 +22,7 @@ export const EditModal: React.FC<EditModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [localData, setLocalData] = useState<AppStateType>(initialData);
+  const [studyPlanDisplayModalVisible, setStudyPlanDisplayModalVisible] = useState(false);
 
   // Update local data when modal opens or initial data changes
   useEffect(() => {
@@ -71,31 +73,13 @@ export const EditModal: React.FC<EditModalProps> = ({
   };
 
   const handleSaveToFile = () => {
-    try {
-      const jsonData = JSON.stringify(localData, null, 2);
-      const blob = new Blob([jsonData], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      // Create filename from subject, sanitizing it for filesystem
-      const sanitizedSubject = localData.subject
-        .replace(/[^a-zA-Z0-9\s-_]/g, '') // Remove special characters
-        .replace(/\s+/g, '_') // Replace spaces with underscores
-        .toLowerCase();
-      
-      const filename = `${sanitizedSubject}_StudyPlan.json`;
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      debugLog('Study plan saved to file:', filename);
-    } catch (error) {
-      debugLog('Failed to save study plan to file:', error);
-    }
+    debugLog('Opening study plan display modal for saving');
+    setStudyPlanDisplayModalVisible(true);
+  };
+
+  const handleStudyPlanDisplayOk = () => {
+    debugLog('Study plan display modal completed');
+    setStudyPlanDisplayModalVisible(false);
   };
 
   const handleCancel = () => {
@@ -149,13 +133,13 @@ export const EditModal: React.FC<EditModalProps> = ({
       width={800}
       okText="Continue"
       cancelText="Cancel"
-      destroyOnClose
+      destroyOnHidden
       footer={[
         <Button key="cancel" onClick={handleCancel}>
           Cancel
         </Button>,
         <Button key="save" onClick={handleSaveToFile}>
-          Save to File
+          Save
         </Button>,
         <Button key="continue" type="primary" onClick={handleOk}>
           Continue
@@ -187,6 +171,14 @@ export const EditModal: React.FC<EditModalProps> = ({
         
         {renderArrayField('questions', 'Questions')}
       </Form>
+
+      {/* Study Plan Display Modal */}
+      <StudyPlanDisplayModal
+        visible={studyPlanDisplayModalVisible}
+        onCancel={() => setStudyPlanDisplayModalVisible(false)}
+        onOk={handleStudyPlanDisplayOk}
+        studyPlanData={localData}
+      />
     </Modal>
   );
 };

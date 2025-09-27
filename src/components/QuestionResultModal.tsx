@@ -3,7 +3,7 @@ import { Modal, Typography, Card, Space, Button, Progress } from 'antd';
 import type { CompletedQuestionType } from '../types';
 import { debugLog } from '../utils/logger';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export const QuestionResultModal: React.FC<{
   visible: boolean;
@@ -64,7 +64,7 @@ export const QuestionResultModal: React.FC<{
         ])
       ]}
       width={600}
-      destroyOnClose
+      destroyOnHidden
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Question Section */}

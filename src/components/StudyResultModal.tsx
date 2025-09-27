@@ -69,7 +69,7 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
         </Button>
       ]}
       width={600}
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>

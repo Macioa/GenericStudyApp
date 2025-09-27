@@ -150,6 +150,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     debugLog('Retrying question:', completedQuestion.question);
   };
 
+
   return (
     <Modal
       title={appState.subject || "Study Session"}
@@ -159,7 +160,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
       width={800}
       okText="Complete Session"
       cancelText="Close"
-      destroyOnClose
+      destroyOnHidden
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Context Section */}
@@ -270,6 +271,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
         completedQuestions={modalState.completedQuestions}
         totalQuestions={appState.questions.length}
       />
+
     </Modal>
   );
 };

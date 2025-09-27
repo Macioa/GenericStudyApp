@@ -88,11 +88,19 @@ export async function executeStructuredPrompt<T>(
     }
 
     // Performance optimization: Cache parser instances
-    const schemaKey = JSON.stringify(schema);
+    // Create a unique cache key based on schema structure and name
+    const schemaName = schema._def?.typeName || 'Unknown';
+    const schemaShape = schema._def?.shape || {};
+    const schemaKey = `${schemaName}-${JSON.stringify(schemaShape)}`;
+    debugLog('Schema cache key:', schemaKey);
+    debugLog('Schema shape:', schemaShape);
     let parser = parserCache.get(schemaKey);
     if (!parser) {
+      debugLog('Creating new parser for schema key:', schemaKey);
       parser = StructuredOutputParser.fromZodSchema(schema);
       parserCache.set(schemaKey, parser);
+    } else {
+      debugLog('Using cached parser for schema key:', schemaKey);
     }
 
     // Performance optimization: Cache model instances
@@ -138,7 +146,9 @@ export async function executeStructuredPrompt<T>(
  */
 export function createPromptWithFormatInstructions(template: string, schema: any): string {
   // Performance optimization: Use cached parser
-  const schemaKey = JSON.stringify(schema);
+  const schemaName = schema._def?.typeName || 'Unknown';
+  const schemaShape = schema._def?.shape || {};
+  const schemaKey = `${schemaName}-${JSON.stringify(schemaShape)}`;
   let parser = parserCache.get(schemaKey);
   if (!parser) {
     parser = StructuredOutputParser.fromZodSchema(schema);

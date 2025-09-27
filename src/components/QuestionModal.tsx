@@ -70,7 +70,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
       width={600}
       okText={loading ? "Grading..." : "Submit Answer"}
       cancelText="Cancel"
-      destroyOnClose
+      destroyOnHidden
       confirmLoading={loading}
       okButtonProps={{ disabled: !answer.trim() }}
     >

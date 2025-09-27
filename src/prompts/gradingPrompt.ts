@@ -12,9 +12,11 @@ You are a helpful study assistant. Grade the student's answer and provide feedba
 
 {format_instructions}
 
-Return a JSON object with:
-- score: number from 0.0 to 1.0 (0.0 = incorrect, 1.0 = perfect)
-- feedback: constructive feedback to help the student learn
+IMPORTANT: You must return ONLY a valid JSON object with exactly these two fields:
+- "score": a number from 0.0 to 1.0 (0.0 = incorrect, 1.0 = perfect)
+- "feedback": a string with constructive feedback to help the student learn
+
+Do not include any other fields or text outside the JSON object.
 `;
 
 const GradingResultSchema = z.object({
@@ -37,10 +39,19 @@ Student's Answer: ${validatedSubmission.answer}`;
     );
 
     debugLog('Raw grading result:', gradingResult);
+    debugLog('Grading result type:', typeof gradingResult);
+    debugLog('Grading result keys:', Object.keys(gradingResult || {}));
 
     // Validate that we have the required fields
-    if (gradingResult.score === undefined || gradingResult.feedback === undefined) {
+    if (!gradingResult || typeof gradingResult !== 'object' || 
+        gradingResult.score === undefined || gradingResult.feedback === undefined) {
       debugError('Grading result missing required fields:', gradingResult);
+      debugError('Grading result structure:', {
+        hasScore: 'score' in (gradingResult || {}),
+        hasFeedback: 'feedback' in (gradingResult || {}),
+        scoreValue: gradingResult?.score,
+        feedbackValue: gradingResult?.feedback
+      });
       throw new Error('Invalid grading result: missing score or feedback');
     }
 
@@ -53,16 +64,7 @@ Student's Answer: ${validatedSubmission.answer}`;
 
     return CompletedQuestionSchema.parse(result);
   } catch (error) {
-    debugError('Grading failed, using fallback:', error);
-    
-    // Fallback result when grading fails
-    const fallbackResult = {
-      question: validatedSubmission.question,
-      answer: validatedSubmission.answer,
-      score: 0.5, // Default middle score
-      feedback: 'Unable to grade answer automatically. Please review your response.'
-    };
-
-    return CompletedQuestionSchema.parse(fallbackResult);
+    debugError('Grading failed:', error);
+    throw error;
   }
 }
