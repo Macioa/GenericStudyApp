@@ -98,19 +98,28 @@ function getCachedParser(schema: any): StructuredOutputParser<any> {
   let schemaKey: string;
   
   try {
-    // Use the schema's typeName and shape keys for a reliable cache key
+    // Create a more detailed cache key that includes field names, types, and constraints
     const schemaInfo = {
       typeName: schema._def?.typeName || 'unknown',
-      shapeKeys: schema._def?.shape ? Object.keys(schema._def.shape).sort() : [],
-      // Add a hash of the schema description for additional uniqueness
+      shapeKeys: schema.shape ? Object.keys(schema.shape).sort() : [],
+      // Include field types and constraints for better uniqueness
+      fieldDetails: schema.shape ? Object.entries(schema.shape).map(([key, field]: [string, any]) => ({
+        name: key,
+        type: field._def?.typeName || 'unknown',
+        checks: field._def?.checks?.map((check: any) => ({
+          kind: check.kind,
+          value: check.value
+        })) || [],
+        description: field._def?.description || ''
+      })) : [],
       description: schema.description || '',
       checks: schema._def?.checks?.length || 0
     };
     
     schemaKey = JSON.stringify(schemaInfo);
   } catch (error) {
-    // Fallback: use a simple hash of the schema object
-    schemaKey = `schema_${schema.toString().slice(0, 50)}_${Date.now()}`;
+    // Fallback: use a simple hash of the schema object with timestamp for uniqueness
+    schemaKey = `schema_${schema.toString().slice(0, 50)}_${Date.now()}_${Math.random()}`;
   }
   
   if (PARSER_CACHE.has(schemaKey)) {
