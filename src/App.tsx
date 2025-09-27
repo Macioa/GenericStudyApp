@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, Card, Input, Form, Typography, Space, Tabs, Spin } from 'antd'
 import { z } from 'zod'
 import type { AppStateType } from './types'
-import { detailedPrompt } from './prompts'
+import { detailedPrompt, genericPrompt } from './prompts'
 import './App.css'
 
 const { Text } = Typography
@@ -41,7 +41,10 @@ function App() {
     if (isValid) {
       setIsLoading(true)
       try {
-        const result = await detailedPrompt(studyTopic)
+        // Use detailedPrompt for tab 1 (with specific details), genericPrompt for tab 2 (without specific details)
+        const result = activeTab === '1' 
+          ? await detailedPrompt(studyTopic)
+          : await genericPrompt(studyTopic)
         setAppState(result)
       } catch (error) {
         console.error('Failed to generate study plan:', error)

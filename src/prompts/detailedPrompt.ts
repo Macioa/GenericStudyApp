@@ -16,9 +16,9 @@ Input: {input}
 Return a JSON object with the following structure:
 - subject: GENERATE: A clear, concise summary topic of the input
 - originalPrompt: The original input text
-- subTopics: Subtopics listed in the input
+- subTopics: Subtopics listed in the input. Leave empty if no subtopics are listed in the input.
 - context: Only include if explicitly stated in the input
-- questions: GENERATE: One question per subtopic, with consideration from context
+- questions: GENERATE: One question per subtopic, with consideration from context. Leave empty if no subtopics are listed in the input.
 
 Focus on creating a comprehensive and educational structure that will help someone learn effectively.
 `;

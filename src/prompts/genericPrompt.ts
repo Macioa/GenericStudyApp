@@ -1,0 +1,40 @@
+// Prompt: "Take a string input and dynamically generate a structured study plan based on the content"
+
+import { AppStateSchema } from '../types';
+import type { AppStateType } from '../types';
+import { executeStructuredPrompt } from '../utils/langchain';
+
+const PROMPT_TEMPLATE = `
+You are an intelligent study assistant. Analyze the following input and dynamically create a comprehensive study plan that adapts to the content type and complexity.
+
+Input: {input}
+
+{{ANALYZE THE INPUT AND ADAPT YOUR RESPONSE ACCORDINGLY. DO NOT REWRITE OR EMBELLISH THE ORIGINAL CONTENT.}}
+
+{format_instructions}
+
+Return a JSON object with the following structure:
+- subject: DYNAMICALLY GENERATE: A clear, concise topic that best represents the input content
+- originalPrompt: The original input text (unchanged)
+- subTopics: DYNAMICALLY GENERATE: Extract or create relevant subtopics based on the input content
+- context: DYNAMICALLY GENERATE: Include relevant context, background information, or prerequisites if helpful for understanding
+- questions: DYNAMICALLY GENERATE: Create thoughtful questions that promote learning and understanding of the subject matter
+
+Guidelines for dynamic generation:
+1. For simple topics: Create 2-3 focused subtopics with corresponding questions
+2. For complex subjects: Break down into 4-6 logical subtopics with comprehensive questions
+3. For lists or outlines: Use the existing structure as subtopics and generate questions for each
+4. For questions or problems: Treat each as a subtopic and generate follow-up questions
+5. For concepts or theories: Create subtopics that cover key aspects, applications, and implications
+6. Always consider the learning level and adjust complexity accordingly
+
+Focus on creating an educational structure that maximizes learning effectiveness and comprehension.
+`;
+
+export async function genericPrompt(input: string): Promise<AppStateType> {
+  return executeStructuredPrompt<AppStateType>(
+    PROMPT_TEMPLATE,
+    input,
+    AppStateSchema
+  );
+}

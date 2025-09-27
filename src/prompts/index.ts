@@ -2,3 +2,4 @@
 // Add prompt exports here as they are created
 
 export { detailedPrompt } from './detailedPrompt';
+export { genericPrompt } from './genericPrompt';
