@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, Input, Form, Typography, Space, Tabs } from 'antd'
+import { Button, Card, Input, Form, Typography, Space, Tabs, Spin } from 'antd'
 import { z } from 'zod'
 import type { AppStateType } from './types'
 import './App.css'
@@ -15,6 +15,7 @@ function App() {
   const [studyTopic, setStudyTopic] = useState('')
   const [isValid, setIsValid] = useState(false)
   const [activeTab, setActiveTab] = useState('1')
+  const [isLoading, _setIsLoading] = useState(false)
   const [_appState, _setAppState] = useState<AppStateType>({
     subject: '',
     originalPrompt: '',
@@ -122,11 +123,13 @@ function App() {
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#213547', fontWeight: 'bold', fontSize: '32px' }}>
           Generic Study App
         </h1>
-        <Tabs 
-          activeKey={activeTab} 
-          onChange={setActiveTab}
-          items={tabItems}
-        />
+        <Spin spinning={isLoading}>
+          <Tabs 
+            activeKey={activeTab} 
+            onChange={setActiveTab}
+            items={tabItems}
+          />
+        </Spin>
       </Card>
     </div>
   )
