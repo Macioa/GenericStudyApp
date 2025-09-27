@@ -9,6 +9,7 @@ interface StudyResultModalProps {
   visible: boolean;
   onCancel: () => void;
   onOk: () => void;
+  onRetry: () => void;
   subject: string;
   completedQuestions: CompletedQuestionType[];
   totalQuestions: number;
@@ -18,6 +19,7 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
   visible,
   onCancel,
   onOk,
+  onRetry,
   subject,
   completedQuestions,
   totalQuestions
@@ -25,6 +27,11 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
   const handleOk = () => {
     debugLog('Study result modal completed');
     onOk();
+  };
+
+  const handleRetry = () => {
+    debugLog('Study retry requested');
+    onRetry();
   };
 
   const calculateAverageScore = () => {
@@ -54,6 +61,9 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
       open={visible}
       onCancel={onCancel}
       footer={[
+        <Button key="retry" onClick={handleRetry} size="large">
+          Retry Study Session
+        </Button>,
         <Button key="ok" type="primary" onClick={handleOk} size="large">
           OK
         </Button>

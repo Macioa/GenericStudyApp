@@ -65,6 +65,25 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     onCancel(); // Return to main app
   };
 
+  const handleStudyResultRetry = () => {
+    debugLog('Study session retry requested, resetting to start');
+    setStudyResultModalVisible(false);
+    // Reset the modal state to start from the beginning
+    setModalState({
+      context: '', // Not used anymore, kept for type compatibility
+      remainingQuestions: [...appState.questions],
+      completedQuestions: []
+    });
+    // Reset other states
+    setQuestionModalVisible(false);
+    setResultModalVisible(false);
+    setCurrentQuestion('');
+    setCurrentQuestionIndex(-1);
+    setCurrentResult(null);
+    setCurrentAnswer('');
+    setIsRetry(false);
+  };
+
   const handleAttemptQuestion = (questionIndex: number) => {
     const question = modalState.remainingQuestions[questionIndex];
     setCurrentQuestion(question);
@@ -246,6 +265,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
         visible={studyResultModalVisible}
         onCancel={() => setStudyResultModalVisible(false)}
         onOk={handleStudyResultOk}
+        onRetry={handleStudyResultRetry}
         subject={appState.subject || "Study Session"}
         completedQuestions={modalState.completedQuestions}
         totalQuestions={appState.questions.length}
