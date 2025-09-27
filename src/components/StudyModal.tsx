@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Typography, List, Progress, Card, Space, Button } from 'antd';
-import type { AppStateType } from '../types';
+import type { AppStateType, CompletedQuestionType } from '../types';
 import type { StudyModalStateType } from '../types/studyModal';
 import { QuestionModal } from './QuestionModal';
-import { debugLog } from '../utils/logger';
+import { QuestionResultModal } from './QuestionResultModal';
+import { debugLog, debugError } from '../utils/logger';
+import { gradeSubmission } from '../prompts';
+import type { SubmissionInputType } from '../types';
 
 const { Text } = Typography;
 
@@ -24,8 +27,12 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     completedQuestions: []
   });
   const [questionModalVisible, setQuestionModalVisible] = useState(false);
+  const [resultModalVisible, setResultModalVisible] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<string>('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(-1);
+  const [currentResult, setCurrentResult] = useState<CompletedQuestionType | null>(null);
+  const [currentAnswer, setCurrentAnswer] = useState<string>('');
+  const [resubmitLoading, setResubmitLoading] = useState<boolean>(false);
 
   // Reset modal state when modal becomes visible
   useEffect(() => {
@@ -57,25 +64,49 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     debugLog('Opening question modal for:', question);
   };
 
-  const handleQuestionSubmit = (answer: string) => {
-    const question = currentQuestion;
-    const completedQuestion = {
-      question,
-      answer,
-      score: 1, // Default perfect score for now
-      feedback: `Answer: ${answer}`
-    };
-    
-    setModalState(prev => ({
-      ...prev,
-      remainingQuestions: prev.remainingQuestions.filter((_, index) => index !== currentQuestionIndex),
-      completedQuestions: [...prev.completedQuestions, completedQuestion]
-    }));
-    
+  const handleQuestionSubmit = (result: CompletedQuestionType) => {
+    setCurrentResult(result);
     setQuestionModalVisible(false);
+    setResultModalVisible(true);
+    debugLog('Question completed with result:', result);
+  };
+
+  const handleResultContinue = () => {
+    if (currentResult) {
+      setModalState(prev => ({
+        ...prev,
+        remainingQuestions: prev.remainingQuestions.filter((_, index) => index !== currentQuestionIndex),
+        completedQuestions: [...prev.completedQuestions, currentResult]
+      }));
+    }
+    
+    setResultModalVisible(false);
     setCurrentQuestion('');
     setCurrentQuestionIndex(-1);
-    debugLog('Question completed with answer:', answer);
+    setCurrentResult(null);
+  };
+
+  const handleResultResubmit = async () => {
+    if (!currentAnswer.trim() || !currentQuestion) return;
+    
+    setResubmitLoading(true);
+    debugLog('Resubmitting answer for re-grading:', currentAnswer);
+    
+    try {
+      const submission: SubmissionInputType = {
+        context: appState.context,
+        question: currentQuestion,
+        answer: currentAnswer.trim()
+      };
+      
+      const result = await gradeSubmission(submission);
+      debugLog('Re-grading completed:', result);
+      setCurrentResult(result);
+    } catch (error) {
+      debugError('Error re-grading submission:', error);
+    } finally {
+      setResubmitLoading(false);
+    }
   };
 
   const handleRetryQuestion = (completedIndex: number) => {
@@ -174,7 +205,23 @@ export const StudyModal: React.FC<StudyModalProps> = ({
         onOk={handleQuestionSubmit}
         subject={appState.subject || "Study Question"}
         question={currentQuestion}
+        context={appState.context}
+        onAnswerChange={setCurrentAnswer}
       />
+
+      {/* Result Modal */}
+      {currentResult && (
+        <QuestionResultModal
+          visible={resultModalVisible}
+          onCancel={() => setResultModalVisible(false)}
+          onResubmit={handleResultResubmit}
+          onContinue={handleResultContinue}
+          subject={appState.subject || "Study Question"}
+          question={currentQuestion}
+          result={currentResult}
+          resubmitLoading={resubmitLoading}
+        />
+      )}
     </Modal>
   );
 };

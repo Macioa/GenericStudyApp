@@ -118,6 +118,8 @@ export async function executeStructuredPrompt<T>(
         return await model.invoke(formattedPrompt);
       });
     });
+    
+    debugLog('Raw model response:', { content: response.content });
     const parsedResult = await parser.parse(response.content as string);
     
     debugLog('Structured prompt completed successfully', { result: parsedResult });

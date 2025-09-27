@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Modal, Typography, Input, Button, Space } from 'antd';
-import { debugLog } from '../utils/logger';
+import { Modal, Typography, Input, Space, Spin } from 'antd';
+import { debugLog, debugError } from '../utils/logger';
+import { gradeSubmission } from '../prompts';
+import type { CompletedQuestionType, SubmissionInputType } from '../types';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -8,9 +10,11 @@ const { TextArea } = Input;
 interface QuestionModalProps {
   visible: boolean;
   onCancel: () => void;
-  onOk: (answer: string) => void;
+  onOk: (result: CompletedQuestionType) => void;
   subject: string;
   question: string;
+  context: string[];
+  onAnswerChange?: (answer: string) => void;
 }
 
 export const QuestionModal: React.FC<QuestionModalProps> = ({
@@ -18,14 +22,37 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onCancel,
   onOk,
   subject,
-  question
+  question,
+  context,
+  onAnswerChange
 }) => {
   const [answer, setAnswer] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleOk = () => {
+  const handleOk = async () => {
+    if (!answer.trim()) return;
+    
+    setLoading(true);
     debugLog('QuestionModal submitted with answer:', answer);
-    onOk(answer);
-    setAnswer(''); // Reset answer after submission
+    
+    try {
+      const submission: SubmissionInputType = {
+        context,
+        question,
+        answer: answer.trim()
+      };
+      
+      const result = await gradeSubmission(submission);
+      debugLog('Grading completed:', result);
+      onOk(result);
+      setAnswer(''); // Reset answer after submission
+    } catch (error) {
+      debugError('Error grading submission:', error);
+      // The grading prompt now handles fallbacks internally
+      // Just show error to user and don't proceed
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -41,9 +68,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
       onOk={handleOk}
       onCancel={handleCancel}
       width={600}
-      okText="Submit Answer"
+      okText={loading ? "Grading..." : "Submit Answer"}
       cancelText="Cancel"
       destroyOnClose
+      confirmLoading={loading}
+      okButtonProps={{ disabled: !answer.trim() }}
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <Text type="secondary" style={{ fontSize: '16px' }}>
@@ -52,11 +81,25 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         
         <TextArea
           value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
+          onChange={(e) => {
+            const newAnswer = e.target.value;
+            setAnswer(newAnswer);
+            onAnswerChange?.(newAnswer);
+          }}
           placeholder="Enter your answer here..."
           rows={8}
           style={{ fontSize: '14px' }}
+          disabled={loading}
         />
+        
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <Spin size="large" />
+            <Text type="secondary" style={{ display: 'block', marginTop: '10px' }}>
+              Grading your answer...
+            </Text>
+          </div>
+        )}
       </Space>
     </Modal>
   );

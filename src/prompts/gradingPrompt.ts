@@ -3,13 +3,12 @@
 import { z } from 'zod';
 import { SubmissionInputSchema, CompletedQuestionSchema } from '../types';
 import { executeStructuredPrompt } from '../utils/langchain';
+import { debugLog, debugError } from '../utils/logger';
 
 const PROMPT_TEMPLATE = `
 You are a helpful study assistant. Grade the student's answer and provide feedback.
 
-Context: {context}
-Question: {question}
-Student's Answer: {answer}
+{input}
 
 {format_instructions}
 
@@ -30,18 +29,40 @@ export async function gradeSubmission(submission: z.infer<typeof SubmissionInput
 Question: ${validatedSubmission.question}
 Student's Answer: ${validatedSubmission.answer}`;
 
-  const gradingResult = await executeStructuredPrompt<z.infer<typeof GradingResultSchema>>(
-    PROMPT_TEMPLATE,
-    gradingInput,
-    GradingResultSchema
-  );
+  try {
+    const gradingResult = await executeStructuredPrompt<z.infer<typeof GradingResultSchema>>(
+      PROMPT_TEMPLATE,
+      gradingInput,
+      GradingResultSchema
+    );
 
-  const result = {
-    question: validatedSubmission.question,
-    answer: validatedSubmission.answer,
-    score: gradingResult.score,
-    feedback: gradingResult.feedback
-  };
+    debugLog('Raw grading result:', gradingResult);
 
-  return CompletedQuestionSchema.parse(result);
+    // Validate that we have the required fields
+    if (gradingResult.score === undefined || gradingResult.feedback === undefined) {
+      debugError('Grading result missing required fields:', gradingResult);
+      throw new Error('Invalid grading result: missing score or feedback');
+    }
+
+    const result = {
+      question: validatedSubmission.question,
+      answer: validatedSubmission.answer,
+      score: gradingResult.score,
+      feedback: gradingResult.feedback
+    };
+
+    return CompletedQuestionSchema.parse(result);
+  } catch (error) {
+    debugError('Grading failed, using fallback:', error);
+    
+    // Fallback result when grading fails
+    const fallbackResult = {
+      question: validatedSubmission.question,
+      answer: validatedSubmission.answer,
+      score: 0.5, // Default middle score
+      feedback: 'Unable to grade answer automatically. Please review your response.'
+    };
+
+    return CompletedQuestionSchema.parse(fallbackResult);
+  }
 }

@@ -8,11 +8,12 @@ const { Title, Text } = Typography;
 export const QuestionResultModal: React.FC<{
   visible: boolean;
   onCancel: () => void;
-  onResubmit: () => void;
+  onResubmit: () => void | Promise<void>;
   onContinue: () => void;
   subject: string;
   question: string;
   result: CompletedQuestionType;
+  resubmitLoading?: boolean;
 }> = ({
   visible,
   onCancel,
@@ -20,7 +21,8 @@ export const QuestionResultModal: React.FC<{
   onContinue,
   subject,
   question,
-  result
+  result,
+  resubmitLoading = false
 }) => {
   const handleResubmit = () => {
     debugLog('Question resubmit requested');
@@ -44,18 +46,22 @@ export const QuestionResultModal: React.FC<{
     return 'exception';
   };
 
+  const isGradingFailed = result.feedback.includes('Unable to grade answer automatically');
+
   return (
     <Modal
       title={subject}
       open={visible}
       onCancel={onCancel}
       footer={[
-        <Button key="resubmit" onClick={handleResubmit}>
-          Resubmit
+        <Button key="resubmit" onClick={handleResubmit} loading={resubmitLoading}>
+          {resubmitLoading ? 'Re-grading...' : 'Resubmit'}
         </Button>,
-        <Button key="continue" type="primary" onClick={handleContinue}>
-          Continue
-        </Button>
+        ...(isGradingFailed ? [] : [
+          <Button key="continue" type="primary" onClick={handleContinue}>
+            Continue
+          </Button>
+        ])
       ]}
       width={600}
       destroyOnClose
