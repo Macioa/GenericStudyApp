@@ -14,6 +14,7 @@ interface StudyResultModalProps {
   subject: string;
   completedQuestions: CompletedQuestionType[];
   totalQuestions: number;
+  revisedPlanLoading?: boolean;
 }
 
 export const StudyResultModal: React.FC<StudyResultModalProps> = ({
@@ -24,7 +25,8 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
   onRevisedStudyPlan,
   subject,
   completedQuestions,
-  totalQuestions
+  totalQuestions,
+  revisedPlanLoading = false
 }) => {
   const handleOk = () => {
     debugLog('Study result modal completed');
@@ -71,8 +73,8 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
         <Button key="retry" onClick={handleRetry} size="large">
           Retry Study Session
         </Button>,
-        <Button key="revised" onClick={handleRevisedStudyPlan} size="large">
-          Revised Study Plan
+        <Button key="revised" onClick={handleRevisedStudyPlan} size="large" loading={revisedPlanLoading}>
+          {revisedPlanLoading ? 'Creating Revised Plan...' : 'Revised Study Plan'}
         </Button>,
         <Button key="ok" type="primary" onClick={handleOk} size="large">
           OK

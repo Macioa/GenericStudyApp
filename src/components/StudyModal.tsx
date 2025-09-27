@@ -39,6 +39,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
   const [studyResultModalVisible, setStudyResultModalVisible] = useState(false);
   const [studyPlanDisplayModalVisible, setStudyPlanDisplayModalVisible] = useState(false);
   const [revisedStudyPlan, setRevisedStudyPlan] = useState<AppStateType | null>(null);
+  const [revisedPlanLoading, setRevisedPlanLoading] = useState<boolean>(false);
 
   // Reset modal state when modal becomes visible
   useEffect(() => {
@@ -156,6 +157,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
   const handleRevisedStudyPlan = async () => {
     debugLog('Creating revised study plan from study results');
     
+    setRevisedPlanLoading(true);
     try {
       // Create study modal state for the revised study plan prompt
       const studyModalState: StudyModalStateType = {
@@ -171,6 +173,8 @@ export const StudyModal: React.FC<StudyModalProps> = ({
       debugLog('Revised study plan created successfully:', revisedPlan);
     } catch (error) {
       debugError('Failed to create revised study plan:', error);
+    } finally {
+      setRevisedPlanLoading(false);
     }
   };
 
@@ -307,6 +311,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
         subject={appState.subject || "Study Session"}
         completedQuestions={modalState.completedQuestions}
         totalQuestions={appState.questions.length}
+        revisedPlanLoading={revisedPlanLoading}
       />
 
       {/* Study Plan Display Modal */}
