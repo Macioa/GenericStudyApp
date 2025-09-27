@@ -5,8 +5,9 @@ import type { StudyModalStateType } from '../types/studyModal';
 import { QuestionModal } from './QuestionModal';
 import { QuestionResultModal } from './QuestionResultModal';
 import { StudyResultModal } from './StudyResultModal';
+import { StudyPlanDisplayModal } from './StudyPlanDisplayModal';
 import { debugLog, debugError } from '../utils/logger';
-import { gradeSubmission } from '../prompts';
+import { gradeSubmission, revisedStudyPlanPrompt } from '../prompts';
 import type { SubmissionInputType } from '../types';
 
 const { Text } = Typography;
@@ -36,6 +37,8 @@ export const StudyModal: React.FC<StudyModalProps> = ({
   const [resubmitLoading, setResubmitLoading] = useState<boolean>(false);
   const [isRetry, setIsRetry] = useState<boolean>(false);
   const [studyResultModalVisible, setStudyResultModalVisible] = useState(false);
+  const [studyPlanDisplayModalVisible, setStudyPlanDisplayModalVisible] = useState(false);
+  const [revisedStudyPlan, setRevisedStudyPlan] = useState<AppStateType | null>(null);
 
   // Reset modal state when modal becomes visible
   useEffect(() => {
@@ -148,6 +151,39 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     setIsRetry(true);
     setQuestionModalVisible(true);
     debugLog('Retrying question:', completedQuestion.question);
+  };
+
+  const handleRevisedStudyPlan = async () => {
+    debugLog('Creating revised study plan from study results');
+    
+    try {
+      // Create study modal state for the revised study plan prompt
+      const studyModalState: StudyModalStateType = {
+        context: appState.context.join('\n'),
+        remainingQuestions: modalState.remainingQuestions,
+        completedQuestions: modalState.completedQuestions
+      };
+      
+      const revisedPlan = await revisedStudyPlanPrompt(studyModalState);
+      setRevisedStudyPlan(revisedPlan);
+      setStudyResultModalVisible(false);
+      setStudyPlanDisplayModalVisible(true);
+      debugLog('Revised study plan created successfully:', revisedPlan);
+    } catch (error) {
+      debugError('Failed to create revised study plan:', error);
+    }
+  };
+
+  const handleStudyPlanDisplayOk = () => {
+    setStudyPlanDisplayModalVisible(false);
+    setRevisedStudyPlan(null);
+    onCancel(); // Return to main app
+  };
+
+  const handleStudyPlanDisplayCancel = () => {
+    setStudyPlanDisplayModalVisible(false);
+    setRevisedStudyPlan(null);
+    setStudyResultModalVisible(true); // Return to study result modal
   };
 
 
@@ -267,10 +303,21 @@ export const StudyModal: React.FC<StudyModalProps> = ({
         onCancel={() => setStudyResultModalVisible(false)}
         onOk={handleStudyResultOk}
         onRetry={handleStudyResultRetry}
+        onRevisedStudyPlan={handleRevisedStudyPlan}
         subject={appState.subject || "Study Session"}
         completedQuestions={modalState.completedQuestions}
         totalQuestions={appState.questions.length}
       />
+
+      {/* Study Plan Display Modal */}
+      {revisedStudyPlan && (
+        <StudyPlanDisplayModal
+          visible={studyPlanDisplayModalVisible}
+          onCancel={handleStudyPlanDisplayCancel}
+          onOk={handleStudyPlanDisplayOk}
+          studyPlanData={revisedStudyPlan}
+        />
+      )}
 
     </Modal>
   );

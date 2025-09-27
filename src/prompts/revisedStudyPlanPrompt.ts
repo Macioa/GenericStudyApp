@@ -11,9 +11,7 @@ const PROMPT_TEMPLATE = `
 You are an intelligent study assistant. Analyze the study session results and create a revised study plan that focuses on areas where the student needs improvement.
 
 Study Session Data:
-- Context: {context}
-- Completed Questions: {completedQuestions}
-- Remaining Questions: {remainingQuestions}
+{input}
 
 {format_instructions}
 

@@ -10,6 +10,7 @@ interface StudyResultModalProps {
   onCancel: () => void;
   onOk: () => void;
   onRetry: () => void;
+  onRevisedStudyPlan: () => void;
   subject: string;
   completedQuestions: CompletedQuestionType[];
   totalQuestions: number;
@@ -20,6 +21,7 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
   onCancel,
   onOk,
   onRetry,
+  onRevisedStudyPlan,
   subject,
   completedQuestions,
   totalQuestions
@@ -32,6 +34,11 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
   const handleRetry = () => {
     debugLog('Study retry requested');
     onRetry();
+  };
+
+  const handleRevisedStudyPlan = () => {
+    debugLog('Revised study plan requested');
+    onRevisedStudyPlan();
   };
 
   const calculateAverageScore = () => {
@@ -63,6 +70,9 @@ export const StudyResultModal: React.FC<StudyResultModalProps> = ({
       footer={[
         <Button key="retry" onClick={handleRetry} size="large">
           Retry Study Session
+        </Button>,
+        <Button key="revised" onClick={handleRevisedStudyPlan} size="large">
+          Revised Study Plan
         </Button>,
         <Button key="ok" type="primary" onClick={handleOk} size="large">
           OK
