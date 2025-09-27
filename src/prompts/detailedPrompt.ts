@@ -2,7 +2,7 @@
 
 import { AppStateSchema } from '../types';
 import type { AppStateType } from '../types';
-import { executeStructuredPrompt } from '../utils/langchain';
+import { executeStructuredPrompt, executeStructuredPromptStream, executeStructuredPromptsBatch } from '../utils/langchain';
 
 const PROMPT_TEMPLATE = `
 You are a helpful study assistant. Take the following input and create a structured study plan.
@@ -29,4 +29,34 @@ export async function detailedPrompt(input: string): Promise<AppStateType> {
     input,
     AppStateSchema
   );
+}
+
+/**
+ * Create a detailed study plan with streaming support for real-time feedback
+ */
+export async function detailedPromptStream(
+  input: string,
+  onToken?: (token: string) => void
+): Promise<AppStateType> {
+  return executeStructuredPromptStream<AppStateType>(
+    PROMPT_TEMPLATE,
+    input,
+    AppStateSchema,
+    "gpt-4o-mini",
+    0.7,
+    onToken
+  );
+}
+
+/**
+ * Create multiple detailed study plans in batch for improved performance
+ */
+export async function detailedPromptsBatch(inputs: string[]): Promise<AppStateType[]> {
+  const prompts = inputs.map(input => ({
+    template: PROMPT_TEMPLATE,
+    input,
+    schema: AppStateSchema
+  }));
+
+  return executeStructuredPromptsBatch<AppStateType>(prompts);
 }

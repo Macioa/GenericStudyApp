@@ -4,7 +4,7 @@ import { StudyModalStateSchema } from '../types';
 import type { StudyModalStateType } from '../types';
 import { AppStateSchema } from '../types';
 import type { AppStateType } from '../types';
-import { executeStructuredPrompt } from '../utils/langchain';
+import { executeStructuredPrompt, executeStructuredPromptStream, executeStructuredPromptsBatch } from '../utils/langchain';
 import { debugLog, debugError } from '../utils/logger';
 
 const PROMPT_TEMPLATE = `
@@ -62,6 +62,88 @@ ${validatedStudyModalState.remainingQuestions.join('\n')}`;
     return revisedPlanResult;
   } catch (error) {
     debugError('Failed to create revised study plan:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a revised study plan with streaming support for real-time feedback
+ */
+export async function revisedStudyPlanPromptStream(
+  studyModalState: StudyModalStateType,
+  onToken?: (token: string) => void
+): Promise<AppStateType> {
+  const validatedStudyModalState = StudyModalStateSchema.parse(studyModalState);
+  
+  try {
+    debugLog('Creating revised study plan from study results with streaming:', validatedStudyModalState);
+
+    // Prepare the input for the prompt
+    const completedQuestionsText = validatedStudyModalState.completedQuestions
+      .map(q => `Question: ${q.question}\nAnswer: ${q.answer}\nScore: ${q.score}\nFeedback: ${q.feedback}`)
+      .join('\n\n');
+
+    const revisedPlanInput = `Context: ${validatedStudyModalState.context}
+Completed Questions:
+${completedQuestionsText}
+
+Remaining Questions:
+${validatedStudyModalState.remainingQuestions.join('\n')}`;
+
+    const revisedPlanResult = await executeStructuredPromptStream<AppStateType>(
+      PROMPT_TEMPLATE,
+      revisedPlanInput,
+      AppStateSchema,
+      "gpt-4o-mini",
+      0.7,
+      onToken
+    );
+
+    debugLog('Revised study plan with streaming created successfully:', revisedPlanResult);
+    return revisedPlanResult;
+  } catch (error) {
+    debugError('Failed to create revised study plan with streaming:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create multiple revised study plans in batch for improved performance
+ */
+export async function revisedStudyPlanPromptsBatch(
+  studyModalStates: StudyModalStateType[]
+): Promise<AppStateType[]> {
+  try {
+    debugLog('Creating batch revised study plans:', { count: studyModalStates.length });
+
+    const prompts = studyModalStates.map(studyModalState => {
+      const validatedStudyModalState = StudyModalStateSchema.parse(studyModalState);
+      
+      // Prepare the input for the prompt
+      const completedQuestionsText = validatedStudyModalState.completedQuestions
+        .map(q => `Question: ${q.question}\nAnswer: ${q.answer}\nScore: ${q.score}\nFeedback: ${q.feedback}`)
+        .join('\n\n');
+
+      const revisedPlanInput = `Context: ${validatedStudyModalState.context}
+Completed Questions:
+${completedQuestionsText}
+
+Remaining Questions:
+${validatedStudyModalState.remainingQuestions.join('\n')}`;
+
+      return {
+        template: PROMPT_TEMPLATE,
+        input: revisedPlanInput,
+        schema: AppStateSchema
+      };
+    });
+
+    const revisedPlanResults = await executeStructuredPromptsBatch<AppStateType>(prompts);
+
+    debugLog('Batch revised study plans created successfully:', { resultCount: revisedPlanResults.length });
+    return revisedPlanResults;
+  } catch (error) {
+    debugError('Failed to create batch revised study plans:', error);
     throw error;
   }
 }

@@ -3,7 +3,7 @@ import { Button, Card, Input, Form, Typography, Space, Tabs, Spin } from 'antd'
 import { z } from 'zod'
 import type { AppStateType } from './types'
 import { detailedPrompt, genericPrompt } from './prompts'
-import { EditModal, StudyModal } from './components'
+import { EditModal, StudyModal, PromptTester } from './components'
 import { debugLog } from './utils/logger'
 import './App.css'
 
@@ -29,6 +29,7 @@ function App() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [isStudyModalVisible, setIsStudyModalVisible] = useState(false)
   const [pendingAppState, setPendingAppState] = useState<AppStateType | null>(null)
+  const [showPromptTester, setShowPromptTester] = useState(false)
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
@@ -78,6 +79,14 @@ function App() {
 
   const handleStudyModalCancel = () => {
     setIsStudyModalVisible(false)
+  }
+
+  const handleShowPromptTester = () => {
+    setShowPromptTester(true)
+  }
+
+  const handleHidePromptTester = () => {
+    setShowPromptTester(false)
   }
 
 
@@ -156,12 +165,34 @@ function App() {
     }
   ]
 
+  if (showPromptTester) {
+    return (
+      <div>
+        <div style={{ padding: '16px', borderBottom: '1px solid #d9d9d9' }}>
+          <Button onClick={handleHidePromptTester} style={{ marginBottom: '16px' }}>
+            ← Back to Study App
+          </Button>
+        </div>
+        <PromptTester />
+      </div>
+    )
+  }
+
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <Card>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#213547', fontWeight: 'bold', fontSize: '32px' }}>
-          Generic Study App
-        </h1>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h1 style={{ color: '#213547', fontWeight: 'bold', fontSize: '32px', margin: 0 }}>
+            Generic Study App
+          </h1>
+          <Button 
+            type="link" 
+            onClick={handleShowPromptTester}
+            style={{ marginTop: '8px' }}
+          >
+            🧪 Test Prompts & Optimizations
+          </Button>
+        </div>
         <Spin spinning={isLoading}>
           <Tabs 
             activeKey={activeTab} 
