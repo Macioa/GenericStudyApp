@@ -3,7 +3,7 @@ import { Button, Card, Input, Form, Typography, Space, Tabs, Spin } from 'antd'
 import { z } from 'zod'
 import type { AppStateType } from './types'
 import { detailedPrompt, genericPrompt } from './prompts'
-import { EditModal } from './components'
+import { EditModal, StudyModal } from './components'
 import { debugLog } from './utils/logger'
 import './App.css'
 
@@ -27,6 +27,7 @@ function App() {
     questions: []
   })
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+  const [isStudyModalVisible, setIsStudyModalVisible] = useState(false)
   const [pendingAppState, setPendingAppState] = useState<AppStateType | null>(null)
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -66,12 +67,17 @@ function App() {
     setAppState(updatedState)
     setPendingAppState(null)
     setIsEditModalVisible(false)
+    setIsStudyModalVisible(true)
     debugLog('Study plan updated and state set:', updatedState)
   }
 
   const handleEditModalCancel = () => {
     setPendingAppState(null)
     setIsEditModalVisible(false)
+  }
+
+  const handleStudyModalCancel = () => {
+    setIsStudyModalVisible(false)
   }
 
 
@@ -170,6 +176,12 @@ function App() {
         onOk={handleEditModalOk}
         onCancel={handleEditModalCancel}
         initialData={pendingAppState || appState}
+      />
+      
+      <StudyModal
+        visible={isStudyModalVisible}
+        onCancel={handleStudyModalCancel}
+        appState={appState}
       />
     </div>
   )
