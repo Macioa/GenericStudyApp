@@ -8,7 +8,7 @@ import { debugLog, debugError } from './logger';
  * @param promptTemplate The prompt template to use
  * @param input The input string to process
  * @param schema The Zod schema for structured output parsing
- * @param modelName The model name to use (defaults to gpt-3.5-turbo)
+ * @param modelName The model name to use (defaults to gpt-4o-mini)
  * @param temperature The temperature setting (defaults to 0.7)
  * @returns Parsed structured output
  */
@@ -16,17 +16,35 @@ export async function executeStructuredPrompt<T>(
   promptTemplate: string,
   input: string,
   schema: any,
-  modelName: string = "gpt-3.5-turbo",
+  modelName: string = "gpt-4o-mini",
   temperature: number = 0.7
 ): Promise<T> {
   try {
     debugLog('Starting structured prompt execution', { input, modelName, temperature });
     
+    // Debug environment variables
+    debugLog('Environment variables debug', {
+      'import.meta.env': import.meta.env,
+      'VITE_OPENAI_API_KEY': import.meta.env.VITE_OPENAI_API_KEY,
+      'OPENAI_API_KEY': import.meta.env.OPENAI_API_KEY,
+      'MODE': import.meta.env.MODE,
+      'DEV': import.meta.env.DEV,
+      'PROD': import.meta.env.PROD
+    });
+    
     const parser = StructuredOutputParser.fromZodSchema(schema);
     const prompt = PromptTemplate.fromTemplate(promptTemplate);
     
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY || 
+                   import.meta.env.OPENAI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY environment variable is missing. Please set VITE_OPENAI_API_KEY in your .env file.');
+    }
+
     const model = await initChatModel(modelName, {
-      openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      modelProvider: "openai",
+      apiKey: apiKey,
       temperature,
     });
 

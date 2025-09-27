@@ -9,16 +9,14 @@ You are a helpful study assistant. Take the following input and create a structu
 
 Input: {input}
 
-{{DO NOT REWRITE, EMBELLISH OR EXAGERATE. JUST STRUCTURE THE INPUT AS BEST AS POSSIBLE.}}
-
 {format_instructions}
 
 Return a JSON object with the following structure:
-- subject: GENERATE: A clear, concise summary topic of the input
+- subject: A clear, concise subject/topic for the study session
 - originalPrompt: The original input text
-- subTopics: Subtopics listed in the input
-- context: Only include if explicitly stated in the input
-- questions: GENERATE: One question per subtopic, with consideration from context
+- subTopics: An array of 3-5 relevant subtopics to explore
+- context: An array of 3-5 important context points or background information
+- questions: An array of 3-5 thoughtful questions to guide learning
 
 Focus on creating a comprehensive and educational structure that will help someone learn effectively.
 `;
