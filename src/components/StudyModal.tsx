@@ -33,6 +33,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
   const [currentResult, setCurrentResult] = useState<CompletedQuestionType | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<string>('');
   const [resubmitLoading, setResubmitLoading] = useState<boolean>(false);
+  const [isRetry, setIsRetry] = useState<boolean>(false);
 
   // Reset modal state when modal becomes visible
   useEffect(() => {
@@ -60,6 +61,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     const question = modalState.remainingQuestions[questionIndex];
     setCurrentQuestion(question);
     setCurrentQuestionIndex(questionIndex);
+    setIsRetry(false);
     setQuestionModalVisible(true);
     debugLog('Opening question modal for:', question);
   };
@@ -75,7 +77,9 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     if (currentResult) {
       setModalState(prev => ({
         ...prev,
-        remainingQuestions: prev.remainingQuestions.filter((_, index) => index !== currentQuestionIndex),
+        remainingQuestions: isRetry 
+          ? prev.remainingQuestions // Don't remove from remaining questions for retries
+          : prev.remainingQuestions.filter((_, index) => index !== currentQuestionIndex),
         completedQuestions: [...prev.completedQuestions, currentResult]
       }));
     }
@@ -84,6 +88,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     setCurrentQuestion('');
     setCurrentQuestionIndex(-1);
     setCurrentResult(null);
+    setIsRetry(false);
   };
 
   const handleResultResubmit = async () => {
@@ -113,6 +118,7 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     const completedQuestion = modalState.completedQuestions[completedIndex];
     setCurrentQuestion(completedQuestion.question);
     setCurrentQuestionIndex(completedIndex);
+    setIsRetry(true);
     setQuestionModalVisible(true);
     debugLog('Retrying question:', completedQuestion.question);
   };
@@ -137,11 +143,11 @@ export const StudyModal: React.FC<StudyModalProps> = ({
         {/* Progress Section */}
         <Card title="Progress" size="small">
           <Progress
-            percent={Math.round((modalState.completedQuestions.length / appState.questions.length) * 100)}
+            percent={Math.round((new Set(modalState.completedQuestions.map(q => q.question)).size / appState.questions.length) * 100)}
             status="active"
           />
           <Text type="secondary">
-            {modalState.completedQuestions.length} of {appState.questions.length} questions completed
+            {new Set(modalState.completedQuestions.map(q => q.question)).size} of {appState.questions.length} questions completed
           </Text>
         </Card>
 
