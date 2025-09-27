@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Typography, List, Progress, Card, Space, Button } from 'antd';
 import type { AppStateType } from '../types';
 import type { StudyModalStateType } from '../types/studyModal';
+import { QuestionModal } from './QuestionModal';
 import { debugLog } from '../utils/logger';
 
 const { Text } = Typography;
@@ -22,6 +23,9 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     remainingQuestions: [...appState.questions],
     completedQuestions: []
   });
+  const [questionModalVisible, setQuestionModalVisible] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<string>('');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(-1);
 
   // Reset modal state when modal becomes visible
   useEffect(() => {
@@ -45,21 +49,40 @@ export const StudyModal: React.FC<StudyModalProps> = ({
     onCancel(); // Close modal for now
   };
 
-  const handleMarkQuestionComplete = (questionIndex: number) => {
+  const handleAttemptQuestion = (questionIndex: number) => {
     const question = modalState.remainingQuestions[questionIndex];
+    setCurrentQuestion(question);
+    setCurrentQuestionIndex(questionIndex);
+    setQuestionModalVisible(true);
+    debugLog('Opening question modal for:', question);
+  };
+
+  const handleQuestionSubmit = (answer: string) => {
+    const question = currentQuestion;
     const completedQuestion = {
       question,
       score: 1, // Default perfect score for now
-      feedback: "Completed successfully"
+      feedback: `Answer: ${answer}`
     };
     
     setModalState(prev => ({
       ...prev,
-      remainingQuestions: prev.remainingQuestions.filter((_, index) => index !== questionIndex),
+      remainingQuestions: prev.remainingQuestions.filter((_, index) => index !== currentQuestionIndex),
       completedQuestions: [...prev.completedQuestions, completedQuestion]
     }));
     
-    debugLog('Question marked as complete:', question);
+    setQuestionModalVisible(false);
+    setCurrentQuestion('');
+    setCurrentQuestionIndex(-1);
+    debugLog('Question completed with answer:', answer);
+  };
+
+  const handleRetryQuestion = (completedIndex: number) => {
+    const completedQuestion = modalState.completedQuestions[completedIndex];
+    setCurrentQuestion(completedQuestion.question);
+    setCurrentQuestionIndex(completedIndex);
+    setQuestionModalVisible(true);
+    debugLog('Retrying question:', completedQuestion.question);
   };
 
   return (
@@ -101,9 +124,9 @@ export const StudyModal: React.FC<StudyModalProps> = ({
                   <Button 
                     type="primary" 
                     size="small"
-                    onClick={() => handleMarkQuestionComplete(index)}
+                    onClick={() => handleAttemptQuestion(index)}
                   >
-                    Mark Complete
+                    Attempt
                   </Button>
                 ]}
               >
@@ -120,7 +143,17 @@ export const StudyModal: React.FC<StudyModalProps> = ({
               size="small"
               dataSource={modalState.completedQuestions}
               renderItem={(item, index) => (
-                <List.Item>
+                <List.Item
+                  actions={[
+                    <Button 
+                      type="default" 
+                      size="small"
+                      onClick={() => handleRetryQuestion(index)}
+                    >
+                      Retry
+                    </Button>
+                  ]}
+                >
                   <Space direction="vertical" style={{ width: '100%' }}>
                     <Text strong>{index + 1}. {item.question}</Text>
                     <Text type="secondary">Score: {Math.round(item.score * 100)}%</Text>
@@ -132,6 +165,15 @@ export const StudyModal: React.FC<StudyModalProps> = ({
           </Card>
         )}
       </Space>
+
+      {/* Question Modal */}
+      <QuestionModal
+        visible={questionModalVisible}
+        onCancel={() => setQuestionModalVisible(false)}
+        onOk={handleQuestionSubmit}
+        subject={appState.subject || "Study Question"}
+        question={currentQuestion}
+      />
     </Modal>
   );
 };
