@@ -3,6 +3,8 @@ import { Button, Card, Input, Form, Typography, Space, Tabs, Spin } from 'antd'
 import { z } from 'zod'
 import type { AppStateType } from './types'
 import { detailedPrompt, genericPrompt } from './prompts'
+import { EditModal } from './components'
+import { debugLog } from './utils/logger'
 import './App.css'
 
 const { Text } = Typography
@@ -17,13 +19,15 @@ function App() {
   const [isValid, setIsValid] = useState(false)
   const [activeTab, setActiveTab] = useState('1')
   const [isLoading, setIsLoading] = useState(false)
-  const [_appState, setAppState] = useState<AppStateType>({
+  const [appState, setAppState] = useState<AppStateType>({
     subject: '',
     originalPrompt: '',
     subTopics: [],
     context: [],
     questions: []
   })
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+  const [pendingAppState, setPendingAppState] = useState<AppStateType | null>(null)
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
@@ -45,7 +49,11 @@ function App() {
         const result = activeTab === '1' 
           ? await detailedPrompt(studyTopic)
           : await genericPrompt(studyTopic)
-        setAppState(result)
+        
+        // For both tabs, show modal first, don't set state yet
+        setPendingAppState(result)
+        setIsEditModalVisible(true)
+        debugLog('Study plan generated, showing edit modal:', result)
       } catch (error) {
         console.error('Failed to generate study plan:', error)
       } finally {
@@ -53,6 +61,19 @@ function App() {
       }
     }
   }
+
+  const handleEditModalOk = (updatedState: AppStateType) => {
+    setAppState(updatedState)
+    setPendingAppState(null)
+    setIsEditModalVisible(false)
+    debugLog('Study plan updated and state set:', updatedState)
+  }
+
+  const handleEditModalCancel = () => {
+    setPendingAppState(null)
+    setIsEditModalVisible(false)
+  }
+
 
   const tabItems = [
     {
@@ -143,6 +164,13 @@ function App() {
           />
         </Spin>
       </Card>
+      
+      <EditModal
+        visible={isEditModalVisible}
+        onOk={handleEditModalOk}
+        onCancel={handleEditModalCancel}
+        initialData={pendingAppState || appState}
+      />
     </div>
   )
 }
